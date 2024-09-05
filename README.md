@@ -2,6 +2,51 @@
 
 [![Rust](https://github.com/KodrAus/rust-web-app/actions/workflows/rust.yml/badge.svg)](https://github.com/KodrAus/rust-web-app/actions/workflows/rust.yml)
 
+# How to demo Snyk's Rust testing
+_Updated 2024-Sept-05_
+
+Snyk currently doesn't directly support `snyk test` for Rust but we do support Rust testing via `snyk sbom test`. These steps describe how to demonstrate that.
+
+## Setup
+You need an SBOM to test. The easiest way to do this is via Cargo plugins, specifically one called `cyclonedx`. 
+
+Installing the plugin is simple and details are available at https://github.com/CycloneDX/cyclonedx-rust-cargo.
+
+## CLI testing
+1. Generate the SBOM (see setup above): 
+```
+cargo cyclonedx -f json
+``` 
+  * Note: there are no other options. You should end up with a file named something like `shop.cdx.json`
+2. Test it with Snyk:
+```
+snyk sbom test --file=shop.cdx.json --experimental
+```
+  * You should see a vuln in `pkg:cargo/nano-id@0.3.3`
+
+## IDE testing
+The IDE testing takes a little setup; fortunately it's pretty easy to do with RustRover (JetBrains) and shows a nicely automated test flow.
+
+1. In RustRover look in the window title bar for the "Run shop" player and click the 3 stacked dots at the far right, then click "Edit..." under configuration.
+![](./imgs/rustrover-config.png)
+You should be at a screen like this:
+![](./imgs/config-run.png)
+
+2. First, add the SBOM generation step. 
+  * Look for the "Before launch" box in the config screen (see above) and click "+" to add a new step.
+  * Select "Run external tool" in the popup
+  * You should see an "External tool" dialog. Click "+" and then put in the info for running `cargo cyclonedx`:
+![](./imgs/cyclonedx.png)
+
+3. Next add the Snyk testing step.
+  * Same steps as above to add a new external tool step. Then fill in the Snyk details:
+![](./imgs/snyk.png)
+
+4. You're ready to demo. Click the run button (green triangle) in the "run shop" title bar area and it should generate the SBOM and send to Snyk then find the Critical vuln. It will show in an embedded terminal window in RustRover,
+
+---
+
+# We now return you to the README supplied with this app:
 Call:
 
 ```
